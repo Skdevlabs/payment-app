@@ -7,7 +7,7 @@ interface CountdownAcceptProps {
 }
 
 export const CountdownAccept = ({ refetch }: CountdownAcceptProps) => {
-  const timeLeftOnQuote = useAtomValue(timeLeftOnQuoteAtom);
+  const timeLeftOnQuote = useAtomValue<number>(timeLeftOnQuoteAtom);
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
   useEffect(() => {

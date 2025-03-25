@@ -1,15 +1,7 @@
-import {
-  selectedCurrencyAtom,
-  amountDueAtom,
-  cryptoAddressAtom,
-  timeLeftToPayAtom,
-} from "../jotai/atoms";
-import { useAtomValue, useSetAtom } from "jotai";
+import { timeLeftToPayAtom } from "../jotai/atoms";
+import { useSetAtom } from "jotai";
 import { CountdownPay } from "./CountdownPay";
-import { useCountdown } from "../hooks/useCountdownHook";
 import { QRCodeSVG } from "qrcode.react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import {
   Card,
@@ -24,15 +16,12 @@ import { getAcceptQuoteData } from "../api/service";
 import { AcceptQuoteResponseData } from "../utils/types";
 import { useParams } from "react-router-dom";
 
-function truncateAddress(address) {
-  if (address.length <= 12) return address;
-  return `${address.slice(0, 7)}...${address.slice(-5)}`;
+function truncateAddress(address: string): string {
+  if (!address || typeof address !== "string") return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function PayQuote() {
-  const selectedCurrency = useAtomValue(selectedCurrencyAtom);
-  const amountDue = useAtomValue(amountDueAtom);
-  const cryptoAddress = useAtomValue(cryptoAddressAtom);
   const params = useParams();
   const uuid = params.uuid;
   const setTimeLeftToPay = useSetAtom(timeLeftToPayAtom);
@@ -41,7 +30,7 @@ function PayQuote() {
     queryKey: ["getAcceptQuoteData", uuid],
     queryFn: () => getAcceptQuoteData(uuid),
     onSuccess: (data: AcceptQuoteResponseData) => {
-      setTimeLeftToPay(data.expiryDate);
+      setTimeLeftToPay(new Date(data.expiryDate).getTime());
     },
   });
 

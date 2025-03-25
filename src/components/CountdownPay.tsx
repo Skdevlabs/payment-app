@@ -3,7 +3,7 @@ import { timeLeftToPayAtom } from "../jotai/atoms";
 import { useEffect, useState } from "react";
 
 export const CountdownPay = () => {
-  const timeLeftToPay = useAtomValue(timeLeftToPayAtom);
+  const timeLeftToPay = useAtomValue<number>(timeLeftToPayAtom);
   const [remainingTime, setRemainingTime] = useState<number>(0);
 
   useEffect(() => {
@@ -12,18 +12,12 @@ export const CountdownPay = () => {
       const remaining = timeLeftToPay - now;
       setRemainingTime(remaining > 0 ? remaining : 0);
     };
-    updateCountdown(); // Initialize immediately
+    updateCountdown();
 
     const interval = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(interval);
   }, [timeLeftToPay]);
-
-  useEffect(() => {
-    if (remainingTime <= 0) {
-      // navigate(`/payin/${uuid}/pay`)
-    }
-  }, [remainingTime]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor((ms / 1000) % 60);

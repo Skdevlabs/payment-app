@@ -17,10 +17,10 @@ import { Button } from "./ui/button";
 import { Select } from "./ui/select";
 import { useQuery } from "react-query";
 import { getQuoteData, getQuoteDataForCoin } from "../api/service";
-import { QuoteResponseData } from "../utils/types";
+import { QuoteResponseData, QuoteResponseForCoinData } from "../utils/types";
 import { useState } from "react";
 import { timeLeftOnQuoteAtom } from "@/jotai/atoms";
-import { useAtomValue, useSetAtom, useAtom } from "jotai";
+import { useSetAtom } from "jotai";
 import { CountdownAccept } from "./CountdownAccept";
 
 function AcceptQuote() {
@@ -30,35 +30,27 @@ function AcceptQuote() {
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const setTimeLeftOnQuote = useSetAtom(timeLeftOnQuoteAtom);
 
-  const {
-    data: quoteData,
-    // error: quoteFetchError,
-    // isLoading: isQuoteDataLoading,
-  } = useQuery<QuoteResponseData>({
+  const { data: quoteData } = useQuery<QuoteResponseData>({
     queryKey: ["getQuoteData", uuid],
     queryFn: () => getQuoteData(uuid),
     onSuccess: (data: QuoteResponseData) => {
       if (data.status === "EXPIRED") {
         navigate(`/payin/${uuid}/expired`);
       } else {
-        setTimeLeftOnQuote(data.acceptanceExpiryDate);
+        setTimeLeftOnQuote(new Date(data.acceptanceExpiryDate).getTime());
       }
     },
   });
 
-  const {
-    data: quoteDataForCoin,
-    // error: quoteFetchError,
-    // isLoading: isQuoteDataLoading,
-    refetch: refetchQuoteDataForCoin,
-  } = useQuery<QuoteResponseData>({
-    queryKey: ["getQuoteDataForCoin", selectedCurrency, uuid],
-    queryFn: () => getQuoteDataForCoin(selectedCurrency, uuid),
-    enabled: !!selectedCurrency,
-    onSuccess: (data: QuoteResponseData) => {
-      setTimeLeftOnQuote(data.acceptanceExpiryDate);
-    },
-  });
+  const { data: quoteDataForCoin, refetch: refetchQuoteDataForCoin } =
+    useQuery<QuoteResponseForCoinData>({
+      queryKey: ["getQuoteDataForCoin", selectedCurrency, uuid],
+      queryFn: () => getQuoteDataForCoin(selectedCurrency, uuid),
+      enabled: !!selectedCurrency,
+      onSuccess: (data: QuoteResponseForCoinData) => {
+        setTimeLeftOnQuote(new Date(data.acceptanceExpiryDate).getTime());
+      },
+    });
 
   const handleConfirmClick = () => {
     navigate(`/payin/${uuid}/pay`);
