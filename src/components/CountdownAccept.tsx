@@ -1,12 +1,14 @@
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { timeLeftOnQuoteAtom } from "../jotai/atoms";
 import { useEffect, useState } from "react";
-import { useQueryClient } from "react-query";
 
-export const CountdownAccept = ({ refetch }) => {
-  const [timeLeftOnQuote] = useAtom(timeLeftOnQuoteAtom);
+interface CountdownAcceptProps {
+  refetch: () => void;
+}
+
+export const CountdownAccept = ({ refetch }: CountdownAcceptProps) => {
+  const timeLeftOnQuote = useAtomValue(timeLeftOnQuoteAtom);
   const [remainingTime, setRemainingTime] = useState<number>(0);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -14,15 +16,16 @@ export const CountdownAccept = ({ refetch }) => {
       const remaining = timeLeftOnQuote - now;
       setRemainingTime(remaining > 0 ? remaining : 0);
     };
-    updateCountdown(); // Initialize immediately
+    updateCountdown();
 
     const interval = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(interval);
   }, [timeLeftOnQuote]);
-  
+
   useEffect(() => {
     if (remainingTime <= 0) {
+      console.log("Timer expired, refetching data...");
       refetch();
     }
   }, [remainingTime, refetch]);

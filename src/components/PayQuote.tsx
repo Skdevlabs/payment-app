@@ -4,7 +4,7 @@ import {
   cryptoAddressAtom,
   timeLeftToPayAtom,
 } from "../jotai/atoms";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { CountdownPay } from "./CountdownPay";
 import { useCountdown } from "../hooks/useCountdownHook";
 import { QRCodeSVG } from "qrcode.react";
@@ -33,20 +33,17 @@ function PayQuote() {
   const selectedCurrency = useAtomValue(selectedCurrencyAtom);
   const amountDue = useAtomValue(amountDueAtom);
   const cryptoAddress = useAtomValue(cryptoAddressAtom);
-  //   let timeLeft = useAtomValue(timeLeftAtom);
   const params = useParams();
   const uuid = params.uuid;
+  const setTimeLeftToPay = useSetAtom(timeLeftToPayAtom);
 
-  const {
-    data: acceptQuoteData,
-    // error: quoteFetchError,
-    // isLoading: isQuoteDataLoading,
-  } = useQuery<AcceptQuoteResponseData>({
+  const { data: acceptQuoteData } = useQuery<AcceptQuoteResponseData>({
     queryKey: ["getAcceptQuoteData", uuid],
     queryFn: () => getAcceptQuoteData(uuid),
+    onSuccess: (data: AcceptQuoteResponseData) => {
+      setTimeLeftToPay(data.expiryDate);
+    },
   });
-
-  console.log("acceptQuoteData", acceptQuoteData);
 
   if (!acceptQuoteData) {
     return <div>Loading...</div>;
@@ -110,11 +107,10 @@ function PayQuote() {
             <QRCodeSVG value={acceptQuoteData.address.address} size={256} />
           </div>
 
+          {/* Time Left to Pay and Countdown in One Line */}
           <div className="flex items-center justify-between pr-2 border-t border-b border-gray-300 pt-3 pb-3">
-            <p className="text-sm text-gray-700">
-              Time left to pay
-              <CountdownPay />
-            </p>
+            <p className="text-sm text-gray-700">Time left to pay</p>
+            <CountdownPay />
           </div>
         </CardContent>
       </Card>

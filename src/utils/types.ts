@@ -48,5 +48,6 @@ export interface AcceptQuoteResponseData {
         currency: string;
     };
     address: {address:string;}
+    expiryDate: string;
 }
     

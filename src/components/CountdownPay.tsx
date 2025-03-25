@@ -1,17 +1,15 @@
-import { useAtom } from "jotai";
+import { useAtomValue } from "jotai";
 import { timeLeftToPayAtom } from "../jotai/atoms";
 import { useEffect, useState } from "react";
-import { useQueryClient } from "react-query";
 
 export const CountdownPay = () => {
-  const [timeLeftOnQuote] = useAtom(timeLeftToPayAtom);
+  const timeLeftToPay = useAtomValue(timeLeftToPayAtom);
   const [remainingTime, setRemainingTime] = useState<number>(0);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     const updateCountdown = () => {
       const now = Date.now();
-      const remaining = timeLeftOnQuote - now;
+      const remaining = timeLeftToPay - now;
       setRemainingTime(remaining > 0 ? remaining : 0);
     };
     updateCountdown(); // Initialize immediately
@@ -19,7 +17,7 @@ export const CountdownPay = () => {
     const interval = setInterval(updateCountdown, 1000);
 
     return () => clearInterval(interval);
-  }, [timeLeftOnQuote]);
+  }, [timeLeftToPay]);
 
   useEffect(() => {
     if (remainingTime <= 0) {
@@ -36,7 +34,5 @@ export const CountdownPay = () => {
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   };
 
-  return (
-    <div>{timeLeftOnQuote ? formatTime(remainingTime) : "Loading..."}</div>
-  );
+  return <div>{timeLeftToPay ? formatTime(remainingTime) : "Loading..."}</div>;
 };

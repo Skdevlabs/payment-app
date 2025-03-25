@@ -28,26 +28,36 @@ function AcceptQuote() {
   const uuid = params.uuid;
   const navigate = useNavigate();
   const [selectedCurrency, setSelectedCurrency] = useState("");
-  const setTimeLeftOnQuote = useAtom(timeLeftOnQuoteAtom);
+  const setTimeLeftOnQuote = useSetAtom(timeLeftOnQuoteAtom);
 
   const {
     data: quoteData,
     // error: quoteFetchError,
     // isLoading: isQuoteDataLoading,
-    refetch: refetchQuoteData,
   } = useQuery<QuoteResponseData>({
     queryKey: ["getQuoteData", uuid],
     queryFn: () => getQuoteData(uuid),
+    onSuccess: (data: QuoteResponseData) => {
+      if (data.status === "EXPIRED") {
+        navigate(`/payin/${uuid}/expired`);
+      } else {
+        setTimeLeftOnQuote(data.acceptanceExpiryDate);
+      }
+    },
   });
 
   const {
     data: quoteDataForCoin,
     // error: quoteFetchError,
     // isLoading: isQuoteDataLoading,
+    refetch: refetchQuoteDataForCoin,
   } = useQuery<QuoteResponseData>({
     queryKey: ["getQuoteDataForCoin", selectedCurrency, uuid],
     queryFn: () => getQuoteDataForCoin(selectedCurrency, uuid),
     enabled: !!selectedCurrency,
+    onSuccess: (data: QuoteResponseData) => {
+      setTimeLeftOnQuote(data.acceptanceExpiryDate);
+    },
   });
 
   const handleConfirmClick = () => {
@@ -76,7 +86,7 @@ function AcceptQuote() {
         {/* Payment Method Section */}
         <div>
           <Select
-            defaultValue="BTC"
+            defaultValue=" "
             onValueChange={(value) => setSelectedCurrency(value)}
           >
             <Label className="ml-4 text-sm text-gray-700">Pay With</Label>
@@ -94,7 +104,7 @@ function AcceptQuote() {
         {quoteDataForCoin && (
           <>
             {/* Amount Due Section */}
-            <div className="border-t border-gray-300 pt-2 flex items-center justify-between">
+            <div className="border-t border-gray-300 pt-4 flex items-center justify-between">
               <p className="text-sm text-gray-700">Amount Due</p>
               <p className="text-sm font-semibold">
                 {quoteDataForCoin?.paidCurrency?.amount}{" "}
@@ -103,11 +113,9 @@ function AcceptQuote() {
             </div>
 
             {/* Quoted Price Expiry Section */}
-            <div className="border-t border-b border-gray-300 py-2 flex items-center justify-between">
-              <p className="text-sm text-gray-700">
-                Quoted price expires in
-                <CountdownAccept refetch={refetchQuoteData} />
-              </p>
+            <div className="border-t border-b border-gray-300 pt-4 pb-4 flex items-center justify-between">
+              <p className="text-sm text-gray-700">Quoted price expires in </p>
+              <CountdownAccept refetch={refetchQuoteDataForCoin} />
             </div>
 
             {/* Confirm Button */}
